@@ -1,15 +1,15 @@
 # search.py
 # ---------
-# Licensing Information:  You are free to use or extend these projects for 
-# educational purposes provided that (1) you do not distribute or publish 
-# solutions, (2) you retain this notice, and (3) you provide clear 
-# attribution to UC Berkeley, including a link to 
+# Licensing Information:  You are free to use or extend these projects for
+# educational purposes provided that (1) you do not distribute or publish
+# solutions, (2) you retain this notice, and (3) you provide clear
+# attribution to UC Berkeley, including a link to
 # http://inst.eecs.berkeley.edu/~cs188/pacman/pacman.html
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
-# The core projects and autograders were primarily created by John DeNero 
+# The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
-# Student side autograding was added by Brad Miller, Nick Hay, and 
+# Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
 
@@ -88,7 +88,66 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+   
+    """Available functions:
+
+    *.push()
+    *.pop() 
+    *.isEmpty()
+    *.getSuccessors()
+    *.getStartState()
+    *.isGoalState()
+
+
+    """
+
+    fringe = util.Stack()
+    # Making a new instance of the class stack and assigning to fringe
+    fringe.push( (problem.getStartState(), [], []) )
+    # We are pushing [] [] along with problem.getStartState as it expects a 
+    # tuple and we'll get an error stated as:
+    ########## Python error: need more than two values to unpack
+    # so we're giving empty values for the direction and the cost since for initial
+    # state neither of them exist
+    # Initializing the frontier using the initial state of the problem
+    # If case and else case must end with a : in the end of the same line
+    # otherwise it won't work
+    #  if fringe.isEmpty == True : #True must be in capitals in python
+    #      print "failure"
+    # else:
+    ## Not a good method as it isn't written in the problem statement that
+    ## we need to print "failure" in case it doesn't work
+    while fringe.isEmpty() != True:
+    ## We'll use while here instead of if as while keeps on looping until the
+    ## condition becomes false, and if would only run once so this is better
+        leafNode, actions, exploredNodes = fringe.pop()
+    ## adding the value being popped to the ones written above    
+        for currentNode, direction, steps in problem.getSuccessors(leafNode):
+    ## Checking for successors
+            if not currentNode in exploredNodes:
+    #Although, unless would be better in ruby but it's not available in python (CHECK LATER?)
+    # using if not instead of unless
+                if problem.isGoalState(currentNode):
+    # return if we've reached the goal state
+                    return actions + [direction]
+    # returning the value in the correct format
+                fringe.push((currentNode, actions + [direction], exploredNodes + [leafNode] ))
+    # if not reached goal state then push the values into the stack
+    return[]
+
+    "util.raiseNotDefined()"
+
+
+    ###############################
+    #What DFS may be doing wrong?###############################################
+    ## It's trying to go too deep without looking for nodes which might be near
+    ## which might be considered the better thing to do as our maze is not very
+    ## deep as such, but it may be better for very deep mazes 
+
+    #############################################################
+    ######### NOTE ##############################################
+    ##################### CHECK IF DFS IS BETTER FOR ALL CASES?
+    ############################################################
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
