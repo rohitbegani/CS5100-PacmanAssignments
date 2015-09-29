@@ -104,18 +104,21 @@ def depthFirstSearch(problem):
     fringe = util.Stack()
     #startState = (problem.getStartState(), {})
     fringe.push( (problem.getStartState(), []) )
-    exploredNodes = set([])
+    exploredNodes = set()
 
-    sol = None
-    while True:
-        if fringe.isEmpty() :
+    while fringe.isEmpty != True:
+
+        if fringe.isEmpty() == True :
             return 'failure'
+
         sol = fringe.pop()
 
         if problem.isGoalState(sol[0]) :
             return sol[1]
 
-        if not sol[0] in exploredNodes :
+        if sol[0] in exploredNodes :
+            continue
+        else:
             exploredNodes.add(sol[0])
             childrens = problem.getSuccessors(sol[0])
 
@@ -145,18 +148,21 @@ def breadthFirstSearch(problem):
     fringe = util.Queue()
     #startState = (problem.getStartState(), {})
     fringe.push( (problem.getStartState(), []) )
-    exploredNodes = set([])
+    exploredNodes = set()
 
-    sol = None
-    while True:
-        if fringe.isEmpty() :
+    while fringe.isEmpty != True:
+
+        if fringe.isEmpty() == True :
             return 'failure'
+        
         sol = fringe.pop()
 
         if problem.isGoalState(sol[0]) :
             return sol[1]
 
-        if not sol[0] in exploredNodes :
+        if sol[0] in exploredNodes :
+            continue
+        else:
             exploredNodes.add(sol[0])
             childrens = problem.getSuccessors(sol[0])
 
@@ -170,7 +176,32 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    #util.raiseNotDefined()
+
+    fringe = util.PriorityQueue()
+    #startState = (problem.getStartState(), {})
+    #fringe.push(startState, problem.getCostOfActions(startState[1]) )
+    fringe.push((problem.getStartState(), []), 0)
+    exploredNodes = set()
+
+
+    while fringe.isEmpty != True:
+        if fringe.isEmpty() == True :
+            return 'failure'
+
+        sol = fringe.pop()
+
+        if problem.isGoalState(sol[0]) :
+            return sol[1]
+
+        if not sol[0] in exploredNodes :
+            exploredNodes.add(sol[0])
+            childrens = problem.getSuccessors(sol[0])
+
+            for i in range( len(childrens)) :
+                path = list(sol[1])
+                path.append(childrens[i][1])
+                fringe.push( ( childrens[i][0], path ), problem.getCostOfActions(path))
 
 def nullHeuristic(state, problem=None):
     """
@@ -183,6 +214,9 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
+    # fringe = util.PriorityQueue()
+    # startState
 
 
 # Abbreviations
