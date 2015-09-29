@@ -101,9 +101,15 @@ def depthFirstSearch(problem):
 
     """
 
+    """
+
     fringe = util.Stack()
     # Making a new instance of the class stack and assigning to fringe
-    fringe.push( (problem.getStartState(), [], []) )
+    successors = problem.getSuccessors(problem.getStartState())
+    for successor in successors:
+        fringe.push((successor[0], [successor[1]], []))
+    #fringe.push( (problem.getStartState(), [], []) )
+    #explored = set()
     # We are pushing [] [] along with problem.getStartState as it expects a 
     # tuple and we'll get an error stated as:
     ########## Python error: need more than two values to unpack
@@ -134,9 +140,106 @@ def depthFirstSearch(problem):
                 fringe.push((currentNode, actions + [direction], exploredNodes + [leafNode] ))
     # if not reached goal state then push the values into the stack
     return[]
+    """
 
     "util.raiseNotDefined()"
 
+    """
+
+    exploredNodes = set()
+
+    successors = problem.getSuccessors(problem.getStartState())
+    # print "SUCCESSORS::"
+    # print successors
+    exploredNodes.add(problem.getStartState())
+
+    stack = util.Stack()
+
+    for successor in successors:
+        stack.push((successor[0], [successor[1]]))
+    # for successor in successors:
+    #     stack.push((successor[0], [successor[1]]))
+    # print "SUCCESSORS[0]"
+    # print successor[0]
+    # print "SUCCESSORS[1]"
+    # print [successor[1]]
+      
+    while stack.isEmpty() != True:
+        tup = stack.pop()
+        # print "TUPLE::::"
+        # print tup[1]
+        if tup[0] in exploredNodes:
+            continue
+        else:
+            exploredNodes.add(tup[0])
+        if problem.isGoalState(tup[0]):
+            return tup[1]
+        else:
+            successors = problem.getSuccessors(tup[0])
+            for successor in successors:
+                updated_move_list = tup[1][:]
+                # print "Move List"
+                # print updated_move_list
+                updated_move_list.append(successor[1])
+                stack.push((successor[0], updated_move_list))
+
+    return []
+
+    """
+
+    ## Initialize the frontier using the initial state of problem
+    frontier = util.Stack()
+    ## Initializing the explored set to be empty
+    exploredNodes = set()
+    ## a list might work better for python
+    childrens = problem.getSuccessors(problem.getStartState())
+    print "Childrens::"
+    print childrens
+
+    for childrens in childrens:
+        frontier.push((childrens[0], [childrens[1]]))
+        print "Childrens[0]"
+        print childrens[0]
+        print "Childrens[1]"
+        print [childrens[1]]
+      
+    while frontier.isEmpty() != True:
+        sol = frontier.pop()
+        ## choose a leaf node and remove it from frontier
+        print "TUPLE::::"
+        print sol[1]
+        ## Add the first value to explored nodes so that we don't get it again
+        if sol[0] in exploredNodes:
+            continue
+        else:
+            exploredNodes.add(sol[0])
+        ## Check if node contains a goal state?
+        if problem.isGoalState(sol[0]):
+            return sol[1]
+            ## !!!!! Check that it returns the next element otherwise last element won't be there like previous try
+        else:
+            exploredNodes.add(problem.getStartState())
+            ## Add the node to the explored state
+            childrens = problem.getSuccessors(sol[0])
+            for childrens in childrens:
+                updated_move_list = sol[1][:]
+                print "Move List"
+                print updated_move_list
+                updated_move_list.append(childrens[1])
+                frontier.push((childrens[0], updated_move_list))
+                ## Add the successors of the current state
+                ## Add the nodes to frontier and get the final answer, hopefully
+
+    return []
+
+    """
+
+    exploredNodes = set()
+
+    fringe = util.Stack()
+
+    children = problem.getSuccessors(problem.getStartState())
+    """
 
     ###############################
     #What DFS may be doing wrong?###############################################
