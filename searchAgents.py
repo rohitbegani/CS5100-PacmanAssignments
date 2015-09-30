@@ -291,10 +291,10 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         self.top, self.right = self.walls.height-2, self.walls.width-2
 
-        self.topleft = False
-        self.topright = False
-        self.bottomleft = False
-        self.bottomright = False
+        self.leftCorner = False
+        self.rightCorner = False
+        self.bottomLeftCorner = False
+        self.bottomRightCorner = False
 
     def getStartState(self):
         """
@@ -316,9 +316,9 @@ class CornersProblem(search.SearchProblem):
         #     or self.startingPosition == (self.right, 1) or self.startingPosition == (self.right, self.top)) :
         #     return True
         # return False
-        position, topleft, topright, bottomleft, bottomright = state
+        position, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner = state
     
-        return topleft and topright and bottomleft and bottomright
+        return leftCorner and rightCorner and bottomLeftCorner and bottomRightCorner
 
 
     def getSuccessors(self, state):
@@ -354,21 +354,21 @@ class CornersProblem(search.SearchProblem):
             #         successors.append( ( nextState, action, cost) )
 
 
-            position, topleft, topright, bottomleft, bottomright = state
+            position, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner = state
             x, y = position
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             if not self.walls[nextx][nexty]:
                 nextPos = (nextx, nexty)
                 if nextPos == (1,1):
-                    bottomleft = True
+                    bottomLeftCorner = True
                 if nextPos == (1,self.top):
-                    topleft = True
+                    leftCorner = True
                 if nextPos == (self.right,1):
-                    bottomright = True
+                    bottomRightCorner = True
                 if nextPos == (self.right,self.top):
-                    topright = True
-                nextState = (nextPos, topleft, topright, bottomleft, bottomright)
+                    rightCorner = True
+                nextState = (nextPos, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner)
                 #cost = self.costFn(nextState)
                 successors.append( ( nextState, action, 1) )
 
