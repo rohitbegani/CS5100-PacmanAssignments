@@ -47,7 +47,7 @@ class GoWestAgent(Agent):
 
     def getAction(self, state):
         "The agent receives a GameState (defined in pacman.py)."
-        if Directions.WEST in state.getLegalPacmanActions():
+        if Directions.WEST in state.geleftCorneregalPacmanActions():
             return Directions.WEST
         else:
             return Directions.STOP
@@ -280,6 +280,9 @@ class CornersProblem(search.SearchProblem):
         """
         self.walls = startingGameState.getWalls()
         self.startingPosition = startingGameState.getPacmanPosition()
+
+        self.pacmanCorner = startingGameState
+
         top, right = self.walls.height-2, self.walls.width-2
         self.corners = ((1,1), (1,top), (right, 1), (right, top))
         for corner in self.corners:
@@ -294,7 +297,7 @@ class CornersProblem(search.SearchProblem):
         self.leftCorner = False
         self.rightCorner = False
         self.bottomLeftCorner = False
-        self.bottomRightCorner = False
+        self.thirdCorner = False
 
     def getStartState(self):
         """
@@ -316,9 +319,9 @@ class CornersProblem(search.SearchProblem):
         #     or self.startingPosition == (self.right, 1) or self.startingPosition == (self.right, self.top)) :
         #     return True
         # return False
-        position, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner = state
+        position, leftCorner, rightCorner, bottomLeftCorner, thirdCorner = state
     
-        return leftCorner and rightCorner and bottomLeftCorner and bottomRightCorner
+        return leftCorner and rightCorner and bottomLeftCorner and thirdCorner
 
 
     def getSuccessors(self, state):
@@ -354,7 +357,7 @@ class CornersProblem(search.SearchProblem):
             #         successors.append( ( nextState, action, cost) )
 
 
-            position, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner = state
+            position, leftCorner, rightCorner, bottomLeftCorner, thirdCorner = state
             x, y = position
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
@@ -365,10 +368,10 @@ class CornersProblem(search.SearchProblem):
                 if nextPos == (1,self.top):
                     leftCorner = True
                 if nextPos == (self.right,1):
-                    bottomRightCorner = True
+                    thirdCorner = True
                 if nextPos == (self.right,self.top):
                     rightCorner = True
-                nextState = (nextPos, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner)
+                nextState = (nextPos, leftCorner, rightCorner, bottomLeftCorner, thirdCorner)
                 #cost = self.costFn(nextState)
                 successors.append( ( nextState, action, 1) )
 
@@ -420,8 +423,73 @@ def cornersHeuristic(state, problem):
     xy2 = problem.goal
     return ( (xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2 ) ** 0.5
     """
+    ## We can use the manhattan distance to get it done
+    ## or Euclidean
+    ## maybe manhattan distance between corners and agent
+    ## go to the corner with the least manhattan distance??? :/
 
-    return 0 # Default to trivial solution
+    #return 0 # Default to trivial solution
+
+    """
+    Returns the maze distance between any two points, using the search functions
+    you have already built. The gameState can be any game state -- Pacman's
+    position in that state is ignored.
+
+    Example usage: mazeDistance( (2,4), (5,6), gameState)
+
+    This might be a useful helper function for your ApproximateSearchAgent.
+
+    x1, y1 = point1
+    x2, y2 = point2
+    walls = gameState.getWalls()
+    assert not walls[x1][y1], 'point1 is a wall: ' + str(point1)
+    assert not walls[x2][y2], 'point2 is a wall: ' + str(point2)
+    prob = PositionSearchProblem(gameState, start=point1, goal=point2, warn=False, visualize=False)
+    return len(search.bfs(prob))
+
+    """
+
+    third, first, third, fourth = corners
+    top = first[1]
+    right = fourth[0]
+  
+    position, leftCorner, rightCorner, bottomLeftCorner, bottomRightCorner = state
+    distanceT = 0
+    cornerDistance = 0
+
+    while not (leftCorner and rightCorner and bottomLeftCorner and bottomRightCorner) ==  True:
+        x, y = position
+        closestDistance = top + right
+        closestCorner = ()
+        if leftCorner == False:
+            cornerDistance = (abs(x - 1) + abs(y - top))
+            if cornerDistance < closestDistance:
+                closestDistance = cornerDistance
+                closestCorner = first
+        if rightCorner == False:
+            cornerDistance = (abs(x - right) + abs(y - top))
+            if cornerDistance < closestDistance:
+                closestDistance = cornerDistance
+                closestCorner = fourth
+        if bottomLeftCorner == False:
+            cornerDistance = (abs(x - 1) + abs(y - 1))
+            if cornerDistance < closestDistance:
+                closestDistance = cornerDistance
+                closestCorner = third
+        if bottomRightCorner == False:
+            cornerDistance = (abs(x - right) + abs(y - 1))
+            if cornerDistance < closestDistance:
+                closestDistance = cornerDistance
+                closestCorner = third
+    
+        position = closestCorner
+        distanceT += closestDistance
+        if closestCorner == first: leftCorner = True
+        if closestCorner == fourth: rightCorner = True
+        if closestCorner == third: bottomLeftCorner = True
+        if closestCorner == third: bottomRightCorner = True
+
+    return distanceT
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -444,6 +512,7 @@ class FoodSearchProblem:
         self.startingGameState = startingGameState
         self._expanded = 0 # DO NOT CHANGE
         self.heuristicInfo = {} # A dictionary for the heuristic to store information
+        self.pacmanFood = startingGameState
 
     def getStartState(self):
         return self.start
@@ -515,7 +584,33 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+
+    top, right = problem.walls.height-2, problem.walls.width-2 
+    foodList = foodGrid.asList()
+
+    closestDistance = top + right
+    if len(foodList) > 0:
+        for food in foodList:
+            #dist = abs(position[0] - food[0]) + abs(position[1] - food[1])
+            dist = mazeDistance((position[0], position[1]), (food[0], food[1]), problem.pacmanFood)
+            if dist < closestDistance:
+                closestDistance = dist
+    else:
+        closestDistance = 0
+
+    furthestDistance = 0
+    for f1 in foodList:
+        for f2 in foodList:
+            #dist = abs(f1[0] - f2[0]) + abs(f1[1] - f2[1])
+            dist = mazeDistance((f1[0], f1[1]), (f2[0], f2[1]), problem.pacmanFood)
+            # print "DISTANCE:::"
+            # print dist
+            if dist > furthestDistance:
+                furthestDistance = dist
+
+    return closestDistance + furthestDistance
+
+    #return 0
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -526,7 +621,7 @@ class ClosestDotSearchAgent(SearchAgent):
             nextPathSegment = self.findPathToClosestDot(currentState) # The missing piece
             self.actions += nextPathSegment
             for action in nextPathSegment:
-                legal = currentState.getLegalActions()
+                legal = currentState.geleftCorneregalActions()
                 if action not in legal:
                     t = (str(action), str(currentState))
                     raise Exception, 'findPathToClosestDot returned an illegal move: %s!\n%s' % t
@@ -548,8 +643,8 @@ class ClosestDotSearchAgent(SearchAgent):
         "*** YOUR CODE HERE ***"
         ## THIS CODE WAS COPY-PASTED FROM BFS
         ## Acc to the book, the only difference between
-        ## BFS and Greedy is their usage of f(n) of h(n)
-        ## for Greedy
+        ## BFS and Greedy is their usage of g(n) for BFS
+        ## and of h(n) for Greedy
         ## So if we just change the goalState then BFS should
         ## work as Greedy search and the autograder approves :)   
         fringe = util.Queue()
