@@ -71,9 +71,6 @@ class ValueIterationAgent(ValueEstimationAgent):
           vs = self.values.copy()
           for state in availableStates:
             availableActions = self.mdp.getPossibleActions(state)
-            
-            
-            
             base_value = -sys.maxint
             for action in availableActions:
               sum = 0
@@ -84,9 +81,12 @@ class ValueIterationAgent(ValueEstimationAgent):
                 rewardForState = self.mdp.getReward(state, action, trans_state)
 
                 sum += probOfAction*(rewardForState + self.discount* self.getValue(trans_state))
-                if base_value <= sum:
-                  base_value = sum
-                  self.values[state] = base_value
+                # base_value = max(base_value, sum)
+                # self.values[state] = base_value
+              if base_value <= sum:
+                base_value = sum
+                vs[state] = base_value
+          self.values = vs
 
     def getValue(self, state):
         """
@@ -104,12 +104,11 @@ class ValueIterationAgent(ValueEstimationAgent):
         #util.raiseNotDefined()
 
         qValue = 0
-        for trans_state, probOfAction in self.mdp.getTransitionStatesAndProbs(state, action):
-
-          rewardForState = self.mdp.getReward(state, action, trans_state)
+        for nextState, probOfAction in self.mdp.getTransitionStatesAndProbs(state, action):
+          rewardForState = self.mdp.getReward(state, action, nextState)
                 ## utility of a state is the immediate reward for that state plus the
                 ## the expected discount utility of the next state
-          qValue += probOfAction*(rewardForState + self.discount* self.getValue(trans_state))
+          qValue += probOfAction*(rewardForState + self.discount*self.getValue(nextState))
         return qValue
 
 
@@ -126,13 +125,24 @@ class ValueIterationAgent(ValueEstimationAgent):
         #util.raiseNotDefined()
         terminalState = self.mdp.isTerminal(state)
         availableActions = self.mdp.getPossibleActions(state)
+        best_action = None
+        best_value = -sys.maxint
 
         if terminalState or not availableActions:
-          return None
+          return best_action  
         #max(iterable[, key])
         
+        # for action in availableActions:
+        #   return max(self.computeQValueFromValues(state, action), action)
+
+        # return max([(self.computeQValueFromValues(state, action), action) 
+        #     for action in availableActions])
+
         for action in availableActions:
-          return max(self.computeQValueFromValues(state, action), action)
+          if self.computeQValueFromValues(state,action) > best_value:
+            best_action = action
+            best_value = self.computeQValueFromValues(state,action)
+        return best_action
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
