@@ -14,6 +14,7 @@
 
 
 import mdp, util
+import sys
 
 from learningAgents import ValueEstimationAgent
 
@@ -43,10 +44,49 @@ class ValueIterationAgent(ValueEstimationAgent):
         self.discount = discount
         self.iterations = iterations
         self.values = util.Counter() # A Counter is a dict with default 0
+        availableStates = self.mdp.getStates()
+        
+        
+        
+        
+
 
         # Write value iteration code here
         "*** YOUR CODE HERE ***"
 
+        ## should return a utility function (maximize reward, obv)
+        ## we need to take in:
+        ### States S
+        ### Actions A
+        ### Transition model P(s'|s,a)
+        ### Rewards R(s)
+        ### discount (delta)
+        ### epsilon is max permissible error
+
+        ## repeat (run a loop for all?)
+        ## for loop: (all states in s)
+        ## apply formula for value-iteration
+        ## if case: (or maybe for by restricting it within a condition)
+        for i in range(self.iterations):
+          vs = self.values.copy()
+          for state in availableStates:
+            availableActions = self.mdp.getPossibleActions(state)
+            
+            
+            
+            base_value = -sys.maxint
+            for action in availableActions:
+              sum = 0
+              for trans_state, probOfAction in self.mdp.getTransitionStatesAndProbs(state, action):
+                ## utility of a state is the immediate reward for that state plus the
+                ## the expected discount utility of the next state
+                #statesAndProbs = self.mdp.getTransitionStatesAndProbs(state, action)
+                rewardForState = self.mdp.getReward(state, action, trans_state)
+
+                sum += probOfAction*(rewardForState + self.discount* self.getValue(trans_state))
+                if base_value <= sum:
+                  base_value = sum
+                  self.values[state] = base_value
 
     def getValue(self, state):
         """
@@ -61,7 +101,17 @@ class ValueIterationAgent(ValueEstimationAgent):
           value function stored in self.values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+
+        qValue = 0
+        for trans_state, probOfAction in self.mdp.getTransitionStatesAndProbs(state, action):
+
+          rewardForState = self.mdp.getReward(state, action, trans_state)
+                ## utility of a state is the immediate reward for that state plus the
+                ## the expected discount utility of the next state
+          qValue += probOfAction*(rewardForState + self.discount* self.getValue(trans_state))
+        return qValue
+
 
     def computeActionFromValues(self, state):
         """
@@ -73,7 +123,16 @@ class ValueIterationAgent(ValueEstimationAgent):
           terminal state, you should return None.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        #util.raiseNotDefined()
+        terminalState = self.mdp.isTerminal(state)
+        availableActions = self.mdp.getPossibleActions(state)
+
+        if terminalState or not availableActions:
+          return None
+        #max(iterable[, key])
+        
+        for action in availableActions:
+          return max(self.computeQValueFromValues(state, action), action)
 
     def getPolicy(self, state):
         return self.computeActionFromValues(state)
