@@ -208,7 +208,11 @@ class ApproximateQAgent(PacmanQAgent):
         """
         "*** YOUR CODE HERE ***"
         #util.raiseNotDefined()
-        
+        ## approximate Q function
+        ## qfunction = w * f
+        ## return qfunction
+        features = self.featExtractor.getFeatures(state,action)
+        return self.weights*features
 
     def update(self, state, action, nextState, reward):
         """
@@ -216,6 +220,16 @@ class ApproximateQAgent(PacmanQAgent):
         """
         "*** YOUR CODE HERE ***"
         #util.raiseNotDefined()
+        ## should update weight
+        ## weight =  weight + alpha * diff * feature
+        ## difference  = (reward + discount (max (next) - (current)))
+        difference = (reward + self.discount* self.computeValueFromQValues(nextState)) - self.getQValue(state, action)
+        ## should update on transition --- use a loop??
+        weights = self.getWeights()
+        features = self.featExtractor.getFeatures(state,action)
+        for feature in features.keys():
+          ## since features is a dictionary hence to get the values of it's keys
+          weights[feature] += self.alpha*difference*features[feature]
 
     def final(self, state):
         "Called at the end of each game."
